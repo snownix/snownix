@@ -36,7 +36,7 @@
 
         <div class="w-full py-10 flex flex-col space-y-3">
             <%= if Github.enabled? do %>
-                <a href={Github.authorize_link(:register)} class="w-full border-2 hover:border-gray-600 rounded-md py-3 flex justify-center items-center hover:!no-underline transition-all">
+                <a href={Github.authorize_link(@socket, :register)} class="w-full border-2 hover:border-gray-600 rounded-md py-3 flex justify-center items-center hover:!no-underline transition-all">
                     <img class="w-7 h-7 mr-3" src={Routes.static_path(@socket, "/images/github.svg")} alt="" />
                     <span class="text-gray-800 font-medium">Sign up with Github</span>
                 </a>  

@@ -1,7 +1,6 @@
 defmodule Snownix.Providers.Github do
   alias SnownixWeb.Router.Helpers, as: Routes
 
-
   @scope "user:email"
   @auth_link "https://github.com/login/oauth/"
   @api_link "https://api.github.com/"
@@ -9,17 +8,17 @@ defmodule Snownix.Providers.Github do
   def client_id, do: Snownix.config([:github, :client_id])
   def client_secret, do: Snownix.config([:github, :client_secret])
 
-  def login_callback, do: Routes.github_login_url(SnownixWeb.Endpoint, :create)
-  def register_callback, do: Routes.github_register_url(SnownixWeb.Endpoint, :create)
+  def login_callback(conn), do: Routes.github_login_url(conn, :create)
+  def register_callback(conn), do: Routes.github_register_url(conn, :create)
 
-  def authorize_link(:login) do
+  def authorize_link(conn, :login) do
     @auth_link <>
-      "authorize?client_id=#{client_id()}&scope=#{@scope}&state=#{state()}&redirect_uri=#{login_callback()}"
+      "authorize?client_id=#{client_id()}&scope=#{@scope}&state=#{state()}&redirect_uri=#{login_callback(conn)}"
   end
 
-  def authorize_link(:register) do
+  def authorize_link(conn, :register) do
     @auth_link <>
-      "authorize?client_id=#{client_id()}&scope=#{@scope}&state=#{state()}&redirect_uri=#{register_callback()}"
+      "authorize?client_id=#{client_id()}&scope=#{@scope}&state=#{state()}&redirect_uri=#{register_callback(conn)}"
   end
 
   def enabled? do
@@ -36,10 +35,9 @@ defmodule Snownix.Providers.Github do
          {:ok, user} <- fetch_user(access_token),
          {:ok, emails} <- fetch_emails(access_token) do
       {:ok,
-        user
-        |> Map.put("emails", emails)
-        |> Map.update!("id", &Kernel.inspect(&1))
-      }
+       user
+       |> Map.put("emails", emails)
+       |> Map.update!("id", &Kernel.inspect(&1))}
     end
   end
 
