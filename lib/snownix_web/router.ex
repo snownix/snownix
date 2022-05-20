@@ -91,8 +91,9 @@ defmodule SnownixWeb.Router do
   scope "/auth", SnownixWeb do
     pipe_through [:browser, :redirect_if_user_is_authenticated]
     post "/login", UserSessionController, :create
-    get "/github/callbacks/register", Providers.GithubRegisterController, :create
-    get "/github/callbacks/login", Providers.GithubLoginController, :create
+
+    get "/providers/:provider", ProvidersController, :request
+    get "/providers/:provider/callback", ProvidersController, :callback
   end
 
   # Other scopes may use custom stacks.

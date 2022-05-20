@@ -11,7 +11,7 @@
         <.live_component module={SnownixWeb.SharedLive.AlertsComponent} flash={@flash} id="alerts" />
         <div class="form__header md:space-x-7">
             <div  class={"relative input__title" <> (if tag_has_error(f,:title) || tag_has_error(f,:slug), do: " field__error", else: "")}>
-                <%= render SnownixWeb.IconsView, "title.svg" , %{} %>
+                <%= render SnownixWeb.IconsView, "title.svg" , %{phx_feedback_for: input_name(f, :title)} %>
                 <div class={"relative w-full"}>
                     <%= text_input f, 
                         :title,
@@ -23,6 +23,7 @@
                         :slug,
                         "phx-focus": "custom-slug",
                         "phx-target": @myself,
+                        phx_feedback_for: input_name(f, :slug),
                         class: "p-0 border-none focus:outline-none", placeholder: gettext("Slug") %>
                 </div>
             </div>
@@ -31,7 +32,7 @@
                     <%= render SnownixWeb.IconsView, "fullscreen-open.svg" , %{} %>
                 </button>
                 
-                <%= live_redirect to: "./", class: "btn h-max" do %> 
+                <%= live_redirect to: @return_to, class: "btn h-max" do %> 
                     <%= render SnownixWeb.IconsView, "cancel.svg" , %{} %>
                         <span><%= gettext("Cancel")%></span>
                 <% end %>
@@ -87,7 +88,7 @@
                                 </li>
                             <% end %>
                         </ul>
-                        <% end %>
+                    <% end %>
                     <div class="input" id="categories" phx-hook="MultiSelect" phx-target={@myself} data-list="categories">
                         <%= text_input f, :query_categories, placeholder: "Categories" %>
                         <%= if length(@list_categories)> 0 do %>

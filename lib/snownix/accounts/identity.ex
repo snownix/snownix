@@ -20,5 +20,4 @@ defmodule Snownix.Accounts.Identity do
     |> validate_required([:provider, :provider_id])
     |> unique_constraint([:provider, :provider_id])
   end
-
 end

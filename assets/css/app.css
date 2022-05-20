@@ -317,10 +317,10 @@ main.container {
 */
 
 .phx-modal {
-  @apply flex bg-indigo-100 p-4;
+  @apply flex justify-center items-center p-4;
 }
-.phx-modal div {
-  @apply flex flex-col w-full;
+.phx-modal .phx-modal-content {
+  @apply flex flex-col w-full bg-indigo-100;
 }
 
 /**

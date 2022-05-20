@@ -23,12 +23,6 @@ defmodule SnownixWeb.PostLive.New do
   def mount(_params, _session, socket) do
     {:ok,
      socket
-     |> assign(:id, "new")
-     |> assign(:post, %Post{
-       entities: [%Entity{}]
-     })
-     |> assign(:markdown, true)
-     |> assign(:custom_slug, false)
-     |> assign(:fullscreen, false)}
+     |> assign(id: "new", markdown: true, post: %Post{entities: [%Entity{}]})}
   end
 end

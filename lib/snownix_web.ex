@@ -20,7 +20,7 @@ defmodule SnownixWeb do
   def controller do
     quote do
       use Phoenix.Controller, namespace: SnownixWeb
-
+      
       import Plug.Conn
       import SnownixWeb.Gettext
       import SnownixWeb.ErrorHelpers

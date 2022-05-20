@@ -2,13 +2,13 @@ defmodule SnownixWeb.AuthLive.Register do
   use SnownixWeb, :live_view
 
   alias Snownix.Accounts
-  alias Snownix.Providers.Github
 
   def mount(_, _, socket) do
-    {:ok,
-     socket
-     |> assign(:changeset, Accounts.user_register_changeset(%Accounts.User{}))
-     |> assign(:page_title, gettext("Sign up"))}
+    {:ok, put_initial_assigns(socket)}
+  end
+
+  def handle_event("show-form", _, socket) do
+    {:noreply, assign(socket, :show_form?, true)}
   end
 
   def handle_event("validate", %{"user" => user_params}, socket) do
@@ -44,5 +44,14 @@ defmodule SnownixWeb.AuthLive.Register do
          socket
          |> assign(:changeset, changeset)}
     end
+  end
+
+  def put_initial_assigns(socket) do
+    socket
+    |> assign(
+      show_form?: false,
+      changeset: Accounts.user_register_changeset(%Accounts.User{}),
+      page_title: gettext("Sign up")
+    )
   end
 end

@@ -7,47 +7,58 @@
         </p>
         <.live_component module={SnownixWeb.SharedLive.AlertsComponent} flash={@flash} id="register-alerts" />
 
-        <.form let={f} for={@changeset} phx-submit="create" phx-change="validate" class="relative w-full space-y-4">
-            <div class="relative">
-                <%= label f, :username, gettext("Username") , class: "font-medium text-gray-900" %>
-                <%= text_input f, :username, placeholder: gettext("Username"), required: true, phx_debounce: "blur" %>
-                <%= error_tag f, :username, 1 %>
-            </div>
-            <div class="relative">
-                <%= label f, :email, gettext("Email") , class: "font-medium text-gray-900" %>
-                <%= email_input f, :email, placeholder: gettext("Enter Your Email Address"), required: true, phx_debounce: "blur" %>
-                <%= error_tag f, :email, 1 %>
-            </div>
-            <div class="relative">
-                <%= label f, :password, gettext("Password") , class: "font-medium text-gray-900" %>
-                <%= password_input f, :password, placeholder: gettext("Password"), required: true, value: input_value(f, :password), phx_debounce: "blur" %>
-                <%= error_tag f, :password, 1 %>
-            </div>
-            <div class="checkbox">
-                <%= checkbox f, :terms , required: true %>
-                <label for="user_terms" >
-                    <%= gettext "I agree to the" %> <a href="#"><%= gettext("Terms and conditions") %></a>
-                </label>
-            </div>
-            <div>
-              <button type="submit" class="btn primary w-full"><%= gettext("Register") %></button>
-            </div>
-        </.form>
+        <%= if @show_form? do %>
+           <.form let={f} for={@changeset} phx-submit="create" phx-change="validate" class="relative w-full space-y-4">
+                <div class="relative">
+                    <%= label f, :username, gettext("Username") , class: "font-medium text-gray-900" %>
+                    <%= text_input f, :username, placeholder: gettext("Username"), required: true, phx_debounce: "blur" %>
+                    <%= error_tag f, :username, 1 %>
+                </div>
+                <div class="relative">
+                    <%= label f, :email, gettext("Email") , class: "font-medium text-gray-900" %>
+                    <%= email_input f, :email, placeholder: gettext("Enter Your Email Address"), required: true, phx_debounce: "blur" %>
+                    <%= error_tag f, :email, 1 %>
+                </div>
+                <div class="relative">
+                    <%= label f, :password, gettext("Password") , class: "font-medium text-gray-900" %>
+                    <%= password_input f, :password, placeholder: gettext("Password"), required: true, value: input_value(f, :password), phx_debounce: "blur" %>
+                    <%= error_tag f, :password, 1 %>
+                </div>
+                <div class="checkbox">
+                    <%= checkbox f, :terms , required: true %>
+                    <label for="user_terms" >
+                        <%= gettext "I agree to the" %> <a href="#"><%= gettext("Terms and conditions") %></a>
+                    </label>
+                </div>
+                <div>
+                    <button type="submit" class="btn primary w-full"><%= gettext("Register") %></button>
+                </div>
+            </.form>
+        <% end %>
 
         <div class="w-full py-10 flex flex-col space-y-3">
-            <%= if Github.enabled? do %>
-                <a href={Github.authorize_link(@socket, :register)} class="w-full border-2 hover:border-gray-600 rounded-md py-3 flex justify-center items-center hover:!no-underline transition-all">
-                    <img class="w-7 h-7 mr-3" src={Routes.static_path(@socket, "/images/github.svg")} alt="" />
-                    <span class="text-gray-800 font-medium">Sign up with Github</span>
-                </a>  
+            <%= if not @show_form? do %>
+                <button phx-click="show-form" class="btn primary w-full">
+                    <span class="mr-3"><%= render SnownixWeb.IconsView, "email.svg" , %{} %></span>
+                    <span class="text-base !mr-2"><%= gettext("Sign up with Email") %></span>
+                </button>              
             <% end %>
-            
-            <a href="#" class="w-full border-2 hover:border-gray-600 rounded-md py-3 flex justify-center items-center hover:!no-underline transition-all">
+            <a href={Routes.providers_path(@socket, :request, "github", type: "register")} class="w-full border-2 hover:border-gray-600 rounded-md py-3 flex justify-center items-center hover:!no-underline transition-all">
+                <img class="w-7 h-7 mr-3" src={Routes.static_path(@socket, "/images/github.svg")} alt="" />
+                <span class="text-gray-800 font-medium">Sign up with Github</span>
+            </a>  
+        
+            <a href={Routes.providers_path(@socket, :request, "google", type: "register")} class="w-full border-2 hover:border-gray-600 rounded-md py-3 flex justify-center items-center hover:!no-underline transition-all">
                 <img class="w-7 h-7 mr-3" src={Routes.static_path(@socket, "/images/google.svg")} alt="" />
                 <span class="text-gray-800 font-medium">Sign up with Google</span>
-            </a>
+            </a>  
+
+            <a href={Routes.providers_path(@socket, :request, "twitter", type: "register")} class="w-full border-2 hover:border-gray-600 rounded-md py-3 flex justify-center items-center hover:!no-underline transition-all">
+                <img class="w-7 h-7 mr-3" src={Routes.static_path(@socket, "/images/twitter.svg")} alt="" />
+                <span class="text-gray-800 font-medium">Sign up with Twitter</span>
+            </a>  
         </div>
-        
+
     </div>
 </section>
 

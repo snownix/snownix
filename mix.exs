@@ -70,7 +70,12 @@ defmodule Snownix.MixProject do
       {:slugify, "~> 1.3"},
       {:faker, "~> 0.17", only: :dev},
       {:earmark, "~> 1.4.20"},
-      {:httpoison, "~> 1.8"}
+      {:ueberauth, "~> 0.7.0"},
+      {:oauth2, "~> 2.0", override: true},
+      {:ueberauth_google, "~> 0.10.1"},
+      {:ueberauth_github, "~> 0.8.1"},
+      {:ueberauth_twitter, "~> 0.4.1"},
+      {:credo, "~> 1.6", only: [:dev, :test], runtime: false}
     ]
   end
 

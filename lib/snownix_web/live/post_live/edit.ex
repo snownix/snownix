@@ -10,10 +10,9 @@ defmodule SnownixWeb.PostLive.Edit do
         module={SnownixWeb.PostLive.Components.FormComponent}
         id={@post.id}
         post={@post}
-        action={@action}
+        action={:edit}
         title={@page_title}
-
-        return_to={nil}
+        return_to={Routes.index_index_path(@socket, :index)}
       />
     """
   end
