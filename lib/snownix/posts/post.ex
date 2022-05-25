@@ -29,27 +29,30 @@ defmodule Snownix.Posts.Post do
     timestamps()
   end
 
+
+  @cast_fields [:slug, :title, :draft, :description, :author_id, :published_at, :read_time]
+
   @doc false
   def changeset(post, attrs, opts \\ []) do
     attrs = custom_slug(Keyword.get(opts, :custom_slug, false), attrs)
 
     post
-    |> cast(attrs, [
-      :slug,
-      :title,
-      :poster,
-      :draft,
-      :description,
-      :author_id,
-      :published_at,
-      :read_time
-    ])
+    |> cast(attrs, @cast_fields)
     |> filter_changeset()
     |> validate_required([:slug, :title, :description])
     |> validate_length(:title, min: 10, max: 225)
     |> validate_length(:description, min: 10, max: 400)
     |> unique_constraint(:slug)
+  end
+
+  def cast_post_assocs(changeset) do
+    changeset
     |> cast_assoc(:entities, with: &Entity.changeset/2, required: true)
+    |> cast_assoc(:categories, with: &Category.changeset/2, required: false)
+  end
+
+  def put_author(changeset, author) do
+    put_assoc(changeset, :author, author)
   end
 
   def custom_slug(true, attrs), do: attrs
@@ -61,7 +64,11 @@ defmodule Snownix.Posts.Post do
   @doc """
   Calculate and assign new read_time value to changeset
   """
-  def read_time_changeset(changeset) do
+  def may_put_read_time(%{valid?: false} = changeset) do
+    changeset
+  end
+
+  def may_put_read_time(changeset) do
     read_time =
       reading_time(get_field(changeset, :description)) +
         Enum.reduce(get_field(changeset, :entities), 0, &(&2 + reading_time(&1.body)))
@@ -77,17 +84,6 @@ defmodule Snownix.Posts.Post do
   def author_changeset(post, author) do
     post
     |> put_change(:author, author)
-  end
-
-  def categories_changeset(post, categories) do
-    post
-    |> put_assoc(
-      :categories,
-      categories
-      |> Enum.map(fn c ->
-        Snownix.Posts.Category.changeset(c, %{})
-      end)
-    )
   end
 
   defp filter_changeset(changeset) do

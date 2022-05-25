@@ -13,10 +13,10 @@ defmodule Snownix.Storage do
       S3.put_object(bucket, dest_path, file_binary)
       |> ExAws.request()
 
-    if !image do
-      {:error}
-    else
+    if image do
       {:ok, generate_s3_link(bucket, dest_path)}
+    else
+      {:error}
     end
   end
 

@@ -95,12 +95,12 @@ defmodule Snownix.Posts do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_post(author, attrs \\ %{}, categories \\ [], opts \\ []) do
+  def create_post(attrs, author \\ nil, opts \\ []) do
     %Post{}
     |> Post.changeset(attrs, opts)
-    |> Post.author_changeset(author)
-    |> Post.categories_changeset(categories)
-    |> Post.read_time_changeset()
+    |> Post.cast_post_assocs()
+    |> Post.put_author(author)
+    |> Post.may_put_read_time()
     |> Repo.insert()
   end
 
@@ -116,12 +116,12 @@ defmodule Snownix.Posts do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_post(%Post{} = post, attrs \\ %{}, categories \\ [], opts \\ []) do
+  def update_post(%Post{} = post, attrs \\ %{}, opts \\ []) do
     post
     |> Repo.preload(:entities)
     |> Post.changeset(attrs, opts)
-    |> Post.categories_changeset(categories)
-    |> Post.read_time_changeset()
+    |> Post.cast_post_assocs()
+    |> Post.may_put_read_time()
     |> Repo.update()
   end
 

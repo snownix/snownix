@@ -60,9 +60,9 @@ defmodule Snownix.Accounts.User do
     if uniq_username?, do: validate_username(changeset), else: changeset
   end
 
-  def provider_registration_changeset(user, attrs, :github) do
+  def provider_registration_changeset(user, attrs) do
     user
-    |> cast(attrs, [:email, :username])
+    |> cast(attrs, [:email, :username, :fullname])
     |> cast_assoc(:identities, with: &Identity.changeset/2, required: true)
     |> validate_required([:email, :username])
     |> validate_email(attrs)
@@ -86,7 +86,6 @@ defmodule Snownix.Accounts.User do
   def avatar_changeset(user, attrs) do
     user
     |> cast_attachments(attrs, [:avatar], allow_paths: true)
-    |> validate_required([:avatar])
   end
 
   defp validate_email(changeset, attrs) do
@@ -96,7 +95,7 @@ defmodule Snownix.Accounts.User do
     |> unique_constraint(:email)
   end
 
-  def validate_email_changeset(changeset,attrs) do
+  def validate_email_changeset(changeset, attrs) do
     changeset
     |> cast(attrs, [:email])
     |> validate_required([:email])

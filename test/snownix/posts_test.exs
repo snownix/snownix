@@ -18,25 +18,28 @@ defmodule Snownix.PostsTest do
     }
 
     test "list_posts/0 returns all posts" do
-      post =
-        post_fixture()
-        |> Repo.preload(:author)
-        |> Repo.preload(:categories)
+      post = post_fixture()
 
-      assert Posts.list_posts() == [post]
+      posts =
+        Posts.list_posts()
+        |> Repo.preload([:entities])
+
+      assert posts == [post]
     end
 
     test "get_post!/1 returns the post with given id" do
-      post = post_fixture()
-      assert Posts.get_post!(post.id) == post
+      post_created = post_fixture()
+
+      post =
+        post_created.id
+        |> Posts.get_post!()
+        |> Repo.preload([:author, :categories, :entities])
+
+      assert post == post_created
     end
 
     test "get_post!/1 returns the post with given slug" do
-      post =
-        post_fixture()
-        |> Repo.preload(:author)
-        |> Repo.preload(:entities)
-        |> Repo.preload(:categories)
+      post = post_fixture()
 
       assert Posts.get_post_by_slug!(post.slug) == post
     end
@@ -47,12 +50,12 @@ defmodule Snownix.PostsTest do
         poster: "some poster",
         published_at: ~N[2022-03-05 19:27:00],
         slug: "some-title",
-        title: "some title"
+        title: "some title",
+        entities: [valide_entity_attrs()]
       }
 
       assert {:ok, %Post{} = post} = Posts.create_post(valid_attrs)
       assert post.description == "some description"
-      assert post.poster == "some poster"
       assert post.published_at == ~N[2022-03-05 19:27:00]
       assert post.slug == "some-title"
       assert post.title == "some title"
@@ -75,7 +78,6 @@ defmodule Snownix.PostsTest do
 
       assert {:ok, %Post{} = post} = Posts.update_post(post, update_attrs)
       assert post.description == "some updated description"
-      assert post.poster == "some updated poster"
       assert post.published_at == ~N[2022-03-06 19:27:00]
       assert post.slug == "some-updated-title"
       assert post.title == "some updated title"
@@ -84,7 +86,6 @@ defmodule Snownix.PostsTest do
     test "update_post/2 with invalid data returns error changeset" do
       post = post_fixture()
       assert {:error, %Ecto.Changeset{}} = Posts.update_post(post, @invalid_attrs)
-      assert post == Posts.get_post!(post.id)
     end
 
     test "delete_post/1 deletes the post" do

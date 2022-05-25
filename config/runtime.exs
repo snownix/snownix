@@ -12,9 +12,32 @@ if System.get_env("PHX_SERVER") && System.get_env("RELEASE_NAME") do
   config :snownix, SnownixWeb.Endpoint, server: true
 end
 
-config :snownix, :github,
+config :ueberauth, Ueberauth,
+  base_path: "/auth/providers",
+  providers: [
+    google:
+      {Ueberauth.Strategy.Google,
+       [
+         default_scope: "email profile",
+         prompt: "select_account",
+         access_type: "offline",
+         include_granted_scopes: true
+       ]},
+    github: {Ueberauth.Strategy.Github, [default_scope: "user:email"]},
+    twitter: {Ueberauth.Strategy.Twitter, []}
+  ]
+
+config :ueberauth, Ueberauth.Strategy.Google.OAuth,
+  client_id: {System, :get_env, ["GOOGLE_CLIENT_ID"]},
+  client_secret: {System, :get_env, ["GOOGLE_CLIENT_SECRET"]}
+
+config :ueberauth, Ueberauth.Strategy.Github.OAuth,
   client_id: System.get_env("GITHUB_CLIENT_ID"),
   client_secret: System.get_env("GITHUB_CLIENT_SECRET")
+
+config :ueberauth, Ueberauth.Strategy.Twitter.OAuth,
+  consumer_key: System.get_env("TWITTER_CONSUMER_KEY"),
+  consumer_secret: System.get_env("TWITTER_CONSUMER_SECRET")
 
 config :snownix,
   demo: System.get_env("SNOWNIX_ENV", "prod") == "demo"

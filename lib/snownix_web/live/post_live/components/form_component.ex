@@ -4,7 +4,6 @@ defmodule SnownixWeb.PostLive.Components.FormComponent do
   alias Snownix.Posts
 
   alias Snownix.Posts
-  alias Snownix.Posts.Category
 
   @impl true
   def update(%{post: post} = assigns, socket) do
@@ -12,13 +11,10 @@ defmodule SnownixWeb.PostLive.Components.FormComponent do
 
     {:ok,
      socket
+     |> assign(draft: false, fullscreen: false, custom_slug: false, changeset: changeset)
      |> assign(assigns)
      |> assign_uploads()
-     |> assign_multiselect()
-     |> assign(:draft, false)
-     |> assign(:fullscreen, false)
-     |> assign(:custom_slug, false)
-     |> assign(:changeset, changeset)}
+     |> assign_multiselect()}
   end
 
   @impl true
@@ -37,17 +33,15 @@ defmodule SnownixWeb.PostLive.Components.FormComponent do
   end
 
   def handle_event("custom-slug", _, socket) do
-    {:noreply,
-     socket
-     |> assign(:custom_slug, true)}
+    {:noreply, assign(socket, :custom_slug, true)}
   end
 
   def handle_event("draft", _, socket) do
-    {:noreply, socket |> assign(:draft, !socket.assigns.draft)}
+    {:noreply, assign(socket, :draft, !socket.assigns.draft)}
   end
 
   def handle_event("tfullscreen", _, socket) do
-    {:noreply, socket |> assign(:fullscreen, !socket.assigns.fullscreen)}
+    {:noreply, assign(socket, :fullscreen, !socket.assigns.fullscreen)}
   end
 
   def handle_event("cancel-upload", %{"ref" => ref}, socket) do
@@ -81,10 +75,12 @@ defmodule SnownixWeb.PostLive.Components.FormComponent do
 
   defp save_post(socket, :edit, post_params) do
     post = socket.assigns.post
-    post_params = Map.merge(post_params, %{"draft" => socket.assigns.draft})
-    categories = socket.assigns.categories
+    post_params =
+      post_params
+      |> Map.put("draft", socket.assigns.draft)
+      |> Map.put("categories", socket.assigns.categories)
 
-    case Posts.update_post(post, post_params, categories, custom_slug: socket.assigns.custom_slug) do
+    case Posts.update_post(post, post_params, custom_slug: socket.assigns.custom_slug) do
       {:ok, post} ->
         {:noreply,
          socket
@@ -97,12 +93,13 @@ defmodule SnownixWeb.PostLive.Components.FormComponent do
   end
 
   defp save_post(socket, :new, post_params) do
-    post = Map.merge(post_params, %{"draft" => socket.assigns.draft})
-
     author = socket.assigns.current_user
-    categories = socket.assigns.categories
+    post =
+      post_params
+      |> Map.put("draft", socket.assigns.draft)
+      |> Map.put("categories", socket.assigns.categories)
 
-    case Posts.create_post(author, post, categories, custom_slug: socket.assigns.custom_slug) do
+    case Posts.create_post(post, author, custom_slug: socket.assigns.custom_slug) do
       {:ok, post} ->
         consume_uploaded_entries(socket, :images, fn meta, entry ->
           {:ok,
@@ -119,13 +116,9 @@ defmodule SnownixWeb.PostLive.Components.FormComponent do
          |> push_redirect(to: socket.assigns.return_to)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        IO.inspect(changeset)
-
         {:noreply,
          socket
-         |> put_flash(:info, "Error !")
-         |> assign(:changeset, changeset)
-         |> put_changeset_errors(changeset)}
+         |> assign(:changeset, changeset)}
     end
   end
 
@@ -187,7 +180,7 @@ defmodule SnownixWeb.PostLive.Components.FormComponent do
               true ->
                 case Snownix.Helper.generate_slug(%{title: title}) do
                   %{slug: slug} ->
-                    %Category{id: get_id(), title: title, slug: slug}
+                    %{id: get_id(), title: title, slug: slug}
 
                   _ ->
                     nil
@@ -210,7 +203,7 @@ defmodule SnownixWeb.PostLive.Components.FormComponent do
     id = id |> String.trim()
 
     case socket.assigns.list_categories |> Enum.find(&(&1.id == id || &1.title == id)) do
-      %Category{id: cat_id, title: title} ->
+      %{id: cat_id, title: title} ->
         socket |> append_item_to_list(:categories, %{"id" => cat_id, "title" => title})
 
       _ ->

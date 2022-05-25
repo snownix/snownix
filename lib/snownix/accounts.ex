@@ -3,10 +3,8 @@ defmodule Snownix.Accounts do
   The Accounts context.
   """
 
-  import Ecto.Query, warn: false
+  import Ecto.Query
   alias Snownix.Repo
-  alias Snownix.Avatar, warn: false
-
   alias Snownix.Accounts.{User, UserToken, UserNotifier, Identity}
 
   @doc """
@@ -120,16 +118,17 @@ defmodule Snownix.Accounts do
     |> Repo.insert()
   end
 
-  def register_user_from_provider(:github, data = %{"id" => user_id}, primary_email) do
-    if user = get_user_by_provider_id(:github, user_id) do
+  def register_user_from_provider(%Ueberauth.Auth{} = auth) do
+    user_id = Kernel.inspect(auth.uid)
+    if user = get_user_by_provider_id(auth.provider, user_id) do
       {:ok, user}
     else
-      identity = %{provider: :github, provider_id: user_id}
+      identity = %{provider: auth.provider, provider_id: user_id}
 
-      if user = get_user_by_email(primary_email) do
+      if user = get_user_by_email(auth.info.email) do
         add_user_identity(user, identity)
       else
-        register_github_user(data, primary_email, identity)
+        create_provider_user(auth.info, identity)
       end
     end
   end
@@ -148,25 +147,31 @@ defmodule Snownix.Accounts do
     end
   end
 
-  def register_github_user(data, primary_email, identity) do
+  def create_provider_user(%Ueberauth.Auth.Info{} = info, identity) do
     attrs = %{
       identities: [identity],
-      email: primary_email,
-      username: data["login"]
+      email: info.email,
+      username: info.nickname,
+      fullname: info.name
     }
 
     %User{}
-    |> User.provider_registration_changeset(attrs, :github)
+    |> User.provider_registration_changeset(attrs)
     |> Repo.insert()
     |> case do
       {:ok, user} ->
-        avatar_path = download_avatar(data["avatar_url"])
-        update_user_avatar(user, avatar_path)
-        File.rm!(avatar_path)
-        {:ok, user}
+        download_and_update_avatar(user, info.image)
+
       any ->
         any
     end
+  end
+
+  defp download_and_update_avatar(user, avatar) do
+    avatar_path = download_avatar(avatar)
+    update_user_avatar(user, avatar_path)
+    File.rm!(avatar_path)
+    {:ok, user}
   end
 
   defp download_avatar(avatar_url) do
@@ -174,6 +179,20 @@ defmodule Snownix.Accounts do
     path = "/tmp/#{Ecto.UUID.autogenerate()}.png"
     File.write!(path, body)
     path
+  end
+
+  def generate_username(name) do
+    username = Slug.slugify(name)
+
+    query =
+      from u in User,
+        where: u.username == ^username
+
+    if Repo.exists?(query) do
+      username <> "#{:rand.uniform(100_000)}"
+    else
+      username
+    end
   end
 
   @doc """
